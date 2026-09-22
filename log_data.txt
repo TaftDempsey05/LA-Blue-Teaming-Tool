@@ -1,88 +1,87 @@
-2026-02-12 09:01:02 user=tdempsey action=login status=failure
-2026-02-12 09:01:05 user=tdempsey action=login status=success
-2026-02-12 09:01:07 user=rflorian action=login status=success
-2026-02-12 09:01:09 user=jsmith action=login status=success
-2026-02-12 09:01:11 user=nhughes action=login status=success
-2026-02-12 09:02:02 user=bwells action=whoami status=success
-2026-02-12 09:03:02 user=bwells action=whoami status=success
-2026-02-12 09:04:02 user=bwells action=whoami status=success
-2026-02-12 09:05:02 user=bwells action=whoami status=success
-2026-02-12 09:06:02 user=admin action=login status=success
-2026-02-12 09:022:02 user=admin action=ls status=success
-2026-02-12 09:34:02 user=admin action=cd.. status=success
-2026-02-12 09:35:02 user=admin action=touch status=success
-2026-02-12 10:01:02 user=admin action=ri status=failure
-2026-02-12 10:03:02 user=admin action=rm status=success
-2026-02-12 10:06:02 user=tdempsey action=logout status=success
-2026-02-12 10:07:02 user=rflorian action=login status=success
-2026-02-12 10:08:02 user=tdempsey action=login'-- status=failure
-2026-02-12 10:11:02 user=tdempsey action=login status=success
-2026-02-12 10:23:02 user=tdempsey action=logout status=success
-2026-02-12 10:26:02 user=rflorian action=login status=success
-2026-02-12 10:35:02 user=rflorian action=logout status=success
-2026-02-12 10:44:02 user=admin action=ssh status=failure
-2026-02-12 10:45:02 user=admin action=ssh status=success
-2026-02-12 10:56:02 user=tdempsey action=login status=failure
-2026-02-12 11:01:02 user=tdempsey action=login status=failure
-2026-02-12 11:04:02 user=tdempsey action=login status=success
-2026-02-12 11:06:02 user=admin action=cat status=success
-2026-02-12 11:08:02 user=bwells action=login status=failure
-2026-02-12 11:10:02 user=bwells action=login status=failure
-2026-02-12 11:12:02 user=rflorian action=login status=success
-2026-02-12 11:14:02 user=rflorian action=logout status=success
-2026-02-12 11:16:02 user=tdempsey action=login status=failure
-2026-02-12 11:18:02 user=admin action=login status=failure
-2026-02-12 11:20:02 user=admin action=login status=failure
-2026-02-12 11:22:02 user=tdempsey action=login status=success
-2026-02-12 11:25:02 user=jsmith action=logout status=success
+2026-02-12 09:01:02 user=tdempsey src_ip=10.0.1.14 action=login status=failure
+2026-02-12 09:01:05 user=tdempsey src_ip=10.0.1.14 action=login status=success
+2026-02-12 09:01:07 user=rflorian src_ip=10.0.1.21 action=login status=success
+2026-02-12 09:01:09 user=jsmith src_ip=10.0.1.33 action=login status=success
+2026-02-12 09:01:11 user=nhughes src_ip=10.0.1.44 action=login status=success
+2026-02-12 09:02:02 user=bwells src_ip=10.0.1.56 action=whoami status=success
+2026-02-12 09:03:02 user=bwells src_ip=10.0.1.56 action=whoami status=success
+2026-02-12 09:04:02 user=bwells src_ip=10.0.1.56 action=whoami status=success
+2026-02-12 09:05:02 user=bwells src_ip=10.0.1.56 action=whoami status=success
+2026-02-12 09:06:02 user=admin src_ip=10.0.0.5 action=login status=success
+2026-02-12 09:022:02 user=admin src_ip=10.0.0.5 action=ls status=success
+2026-02-12 09:34:02 user=admin src_ip=10.0.0.5 action=cd.. status=success
+2026-02-12 09:35:02 user=admin src_ip=10.0.0.5 action=touch status=success
+2026-02-12 10:01:02 user=admin src_ip=10.0.0.5 action=ri status=failure
+2026-02-12 10:03:02 user=admin src_ip=10.0.0.5 action=rm status=success
+2026-02-12 10:06:02 user=tdempsey src_ip=10.0.1.14 action=logout status=success
+2026-02-12 10:07:02 user=rflorian src_ip=10.0.1.21 action=login status=success
+2026-02-12 10:08:02 user=tdempsey src_ip=203.0.113.47 action=login'-- status=failure
+2026-02-12 10:11:02 user=tdempsey src_ip=10.0.1.14 action=login status=success
+2026-02-12 10:23:02 user=tdempsey src_ip=10.0.1.14 action=logout status=success
+2026-02-12 10:26:02 user=rflorian src_ip=10.0.1.21 action=login status=success
+2026-02-12 10:35:02 user=rflorian src_ip=10.0.1.21 action=logout status=success
+2026-02-12 10:44:02 user=admin src_ip=10.0.0.5 action=ssh status=failure
+2026-02-12 10:45:02 user=admin src_ip=10.0.0.5 action=ssh status=success
+2026-02-12 10:56:02 user=tdempsey src_ip=10.0.1.14 action=login status=failure
+2026-02-12 11:01:02 user=tdempsey src_ip=10.0.1.14 action=login status=failure
+2026-02-12 11:04:02 user=tdempsey src_ip=10.0.1.14 action=login status=success
+2026-02-12 11:06:02 user=admin src_ip=10.0.0.5 action=cat status=success
+2026-02-12 11:08:02 user=bwells src_ip=198.51.100.22 action=login status=failure
+2026-02-12 11:10:02 user=bwells src_ip=198.51.100.22 action=login status=failure
+2026-02-12 11:12:02 user=rflorian src_ip=10.0.1.21 action=login status=success
+2026-02-12 11:14:02 user=rflorian src_ip=10.0.1.21 action=logout status=success
+2026-02-12 11:16:02 user=tdempsey src_ip=10.0.1.14 action=login status=failure
+2026-02-12 11:18:02 user=admin src_ip=198.51.100.22 action=login status=failure
+2026-02-12 11:20:02 user=admin src_ip=198.51.100.22 action=login status=failure
+2026-02-12 11:22:02 user=tdempsey src_ip=10.0.1.14 action=login status=success
+2026-02-12 11:25:02 user=jsmith src_ip=10.0.1.33 action=logout status=success
 
-2026-02-12 12:01:02 user=jsmith action=login'-- status=failure
-2026-02-12 12:08:02 user=jsmith action=login status=success
-2026-02-12 12:22:02 user=jsmith action=touchfile status=success
-2026-02-12 12:28:02 user=admin action=logout status=failure
-2026-02-12 12:30:02 user=tdempsey action=login status=failure
-2026-02-12 12:34:02 user=admin action=logout status=success
-2026-02-12 12:44:02 user=jsmith action=login status=success
-2026-02-12 12:46:02 user=jsmith action=pwd status=failure
-2026-02-12 12:50:02 user=jsmith action=pwd status=success
-2026-02-12 12:58:02 user=tdempsey action=login status=failure
-2026-02-12 13:01:02 user=tdempsey action=ping 8.8.8.8 status=success
-2026-02-12 13:08:02 user=admin action=login status=success
-2026-02-12 13:10:02 user=rflorian action=whoami status=success
-2026-02-12 13:11:02 user=tdempsey action=cat malware.txt status=success
-2026-02-12 13:13:02 user=admin action=rm malware.txt status=success
-2026-02-12 13:21:02 user=bwells action=logout status=success
-2026-02-12 14:24:02 user=tdempsey action=logout status=success
-2026-02-12 14:27:02 user=rflorian action=logout status=success
-2026-02-12 14:57:02 user=admin action=login status=success
-2026-02-12 15:01:02 user=admin action=logout status=success
-2026-02-12 15:07:02 user=tdempsey action=login status=failure
-2026-02-12 15:28:02 user=tdempsey action=mfsconsole status=success
-2026-02-12 16:01:02 user=tdempsey action=logout status=success
-2026-02-12 16:33:02 user=nhughes action=login status=failure
-2026-02-12 16:34:02 user=nhughes action=login status=success
-2026-02-12 16:35:02 user=nhughes action=grep status=success
-2026-02-12 16:40:02 user=nhughes action=nmap status=success
-2026-02-12 16:42:02 user=rflorian action=logout status=failure
-2026-02-12 16:44:02 user=rflorian action=logout status=success
-2026-02-12 16:46:02 user=rflorian action=login status=failure
-2026-02-12 16:51:02 user=rflorian action=login status=success
-2026-02-12 16:53:02 user=tdempsey action=login status=success
-2026-02-12 17:01:02 user=tdempsey action=unlink status=success
-2026-02-12 17:22:02 user=tdempsey action=delete status=failure
-2026-02-12 17:35:02 user=tdempsey action=login status=success
-2026-02-12 17:47:02 user=tdempsey action=sshlogin status=success
-2026-02-12 18:01:02 user=tdempsey action=sshlogin status=success
-2026-02-12 18:32:02 user=nhughes action=login status=success
-2026-02-12 18:32:44 user=nhughes action=whoami status=success
-2026-02-12 18:50:02 user=nhughes action=pwd status=success
-2026-02-12 19:01:02 user=nhughes action=cd .. status=success
-2026-02-12 19:06:02 user=nhughes action=cd ~ status=success
-2026-02-12 19:09:02 user=bwells action=login status=success
-2026-02-12 19:11:02 user=nhughes action=logout status=success
-2026-02-12 19:12:02 user=admin action=login status=success
-2026-02-12 23:01:02 user=tdempsey action=login status=success
-2026-02-12 23:01:02 user=tdempsey action=open ssh key file status=success
-2026-02-12 23:01:02 user=tdempsey action=ssh into admin account status=success
-2026-02-12 23:01:02 user=admin action=remove files containing important data status=success
-
+2026-02-12 12:01:02 user=jsmith src_ip=203.0.113.47 action=login'-- status=failure
+2026-02-12 12:08:02 user=jsmith src_ip=10.0.1.33 action=login status=success
+2026-02-12 12:22:02 user=jsmith src_ip=10.0.1.33 action=touchfile status=success
+2026-02-12 12:28:02 user=admin src_ip=10.0.0.5 action=logout status=failure
+2026-02-12 12:30:02 user=tdempsey src_ip=10.0.1.14 action=login status=failure
+2026-02-12 12:34:02 user=admin src_ip=10.0.0.5 action=logout status=success
+2026-02-12 12:44:02 user=jsmith src_ip=10.0.1.33 action=login status=success
+2026-02-12 12:46:02 user=jsmith src_ip=10.0.1.33 action=pwd status=failure
+2026-02-12 12:50:02 user=jsmith src_ip=10.0.1.33 action=pwd status=success
+2026-02-12 12:58:02 user=tdempsey src_ip=10.0.1.14 action=login status=failure
+2026-02-12 13:01:02 user=tdempsey src_ip=10.0.1.14 action=ping 8.8.8.8 status=success
+2026-02-12 13:08:02 user=admin src_ip=10.0.0.5 action=login status=success
+2026-02-12 13:10:02 user=rflorian src_ip=10.0.1.21 action=whoami status=success
+2026-02-12 13:11:02 user=tdempsey src_ip=10.0.1.14 action=cat malware.txt status=success
+2026-02-12 13:13:02 user=admin src_ip=10.0.0.5 action=rm malware.txt status=success
+2026-02-12 13:21:02 user=bwells src_ip=10.0.1.57 action=logout status=success
+2026-02-12 14:24:02 user=tdempsey src_ip=10.0.1.14 action=logout status=success
+2026-02-12 14:27:02 user=rflorian src_ip=10.0.1.21 action=logout status=success
+2026-02-12 14:57:02 user=admin src_ip=10.0.0.5 action=login status=success
+2026-02-12 15:01:02 user=admin src_ip=10.0.0.5 action=logout status=success
+2026-02-12 15:07:02 user=tdempsey src_ip=10.0.1.14 action=login status=failure
+2026-02-12 15:28:02 user=tdempsey src_ip=10.0.1.14 action=mfsconsole status=success
+2026-02-12 16:01:02 user=tdempsey src_ip=10.0.1.14 action=logout status=success
+2026-02-12 16:33:02 user=nhughes src_ip=10.0.1.44 action=login status=failure
+2026-02-12 16:34:02 user=nhughes src_ip=10.0.1.44 action=login status=success
+2026-02-12 16:35:02 user=nhughes src_ip=10.0.1.44 action=grep status=success
+2026-02-12 16:40:02 user=nhughes src_ip=10.0.1.44 action=nmap status=success
+2026-02-12 16:42:02 user=rflorian src_ip=10.0.1.21 action=logout status=failure
+2026-02-12 16:44:02 user=rflorian src_ip=10.0.1.21 action=logout status=success
+2026-02-12 16:46:02 user=rflorian src_ip=10.0.1.21 action=login status=failure
+2026-02-12 16:51:02 user=rflorian src_ip=10.0.1.21 action=login status=success
+2026-02-12 16:53:02 user=tdempsey src_ip=10.0.1.14 action=login status=success
+2026-02-12 17:01:02 user=tdempsey src_ip=10.0.1.14 action=unlink status=success
+2026-02-12 17:22:02 user=tdempsey src_ip=10.0.1.14 action=delete status=failure
+2026-02-12 17:35:02 user=tdempsey src_ip=10.0.1.14 action=login status=success
+2026-02-12 17:47:02 user=tdempsey src_ip=10.0.1.14 action=sshlogin status=success
+2026-02-12 18:01:02 user=tdempsey src_ip=10.0.1.14 action=sshlogin status=success
+2026-02-12 18:32:02 user=nhughes src_ip=10.0.1.44 action=login status=success
+2026-02-12 18:32:44 user=nhughes src_ip=10.0.1.44 action=whoami status=success
+2026-02-12 18:50:02 user=nhughes src_ip=10.0.1.44 action=pwd status=success
+2026-02-12 19:01:02 user=nhughes src_ip=10.0.1.44 action=cd .. status=success
+2026-02-12 19:06:02 user=nhughes src_ip=10.0.1.44 action=cd ~ status=success
+2026-02-12 19:09:02 user=bwells src_ip=10.0.1.57 action=login status=success
+2026-02-12 19:11:02 user=nhughes src_ip=10.0.1.44 action=logout status=success
+2026-02-12 19:12:02 user=admin src_ip=10.0.0.5 action=login status=success
+2026-02-12 23:01:02 user=tdempsey src_ip=203.0.113.47 action=login status=success
+2026-02-12 23:01:02 user=tdempsey src_ip=203.0.113.47 action=open ssh key file status=success
+2026-02-12 23:01:02 user=tdempsey src_ip=203.0.113.47 action=ssh into admin account status=success
+2026-02-12 23:01:02 user=admin src_ip=10.0.1.14 action=remove files containing important data status=success
