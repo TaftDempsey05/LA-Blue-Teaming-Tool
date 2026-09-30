@@ -8,7 +8,7 @@
 2026-02-12 09:04:02 user=bwells src_ip=10.0.1.56 action=whoami status=success
 2026-02-12 09:05:02 user=bwells src_ip=10.0.1.56 action=whoami status=success
 2026-02-12 09:06:02 user=admin src_ip=10.0.0.5 action=login status=success
-2026-02-12 09:022:02 user=admin src_ip=10.0.0.5 action=ls status=success
+2026-02-12 09:22:02 user=admin src_ip=10.0.0.5 action=ls status=success
 2026-02-12 09:34:02 user=admin src_ip=10.0.0.5 action=cd.. status=success
 2026-02-12 09:35:02 user=admin src_ip=10.0.0.5 action=touch status=success
 2026-02-12 10:01:02 user=admin src_ip=10.0.0.5 action=ri status=failure

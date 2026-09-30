@@ -1,0 +1,45 @@
+=== AUTOMATED LOG ANALYSIS REPORT ===
+Parsed: 86 | Skipped: 1
+
+USER: admin
+  IP(s): 10.0.0.5, 10.0.1.14, 198.51.100.22
+  Successful logins: 4
+  Failed logins: 2
+  Actions: cat, cd.., login, logout, ls, remove files containing important data, ri, rm, rm malware.txt, ssh, touch
+
+USER: bwells
+  IP(s): 10.0.1.56, 10.0.1.57, 198.51.100.22
+  Successful logins: 1
+  Failed logins: 2
+  Actions: login, logout, whoami
+
+USER: jsmith
+  IP(s): 10.0.1.33, 203.0.113.47
+  Successful logins: 3
+  Failed logins: 1
+  Actions: login, login'--, logout, pwd, touchfile
+
+USER: nhughes
+  IP(s): 10.0.1.44
+  Successful logins: 3
+  Failed logins: 1
+  Actions: cd .., cd ~, grep, login, logout, nmap, pwd, whoami
+
+USER: rflorian
+  IP(s): 10.0.1.21
+  Successful logins: 5
+  Failed logins: 1
+  Actions: login, logout, whoami
+
+USER: tdempsey
+  IP(s): 10.0.1.14, 203.0.113.47
+  Successful logins: 9
+  Failed logins: 8
+  Actions: cat malware.txt, delete, login, login'--, logout, mfsconsole, open ssh key file, ping 8.8.8.8, ssh into admin account, sshlogin, unlink
+
+=== SUSPICIOUS ACTIVITY ===
+- tdempsey: unusual login at 2026-02-12 23:01:02
+- tdempsey: SSH at unusual time from 203.0.113.47
+- tdempsey: SSH at unusual time from 203.0.113.47
+- tdempsey: possible SQL injection -> 2026-02-12 10:08:02 user=tdempsey src_ip=203.0.113.47 action=login'-- status=failure
+- jsmith: possible SQL injection -> 2026-02-12 12:01:02 user=jsmith src_ip=203.0.113.47 action=login'-- status=failure

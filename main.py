@@ -4,7 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 
 # Tune these values for the organization being analyzed.
-KNOWN_USERS = {"admin", "alice", "bob"}  # TODO: replace with expected users
+KNOWN_USERS = {"admin", "tdempsey", "rflorian", "jsmith", "nhughes", "bwells"}  #Our organization's users.
 SUSPICIOUS_START = 22                    # 10 PM
 SUSPICIOUS_END = 6                       # 6 AM
 SSH_FAIL_THRESHOLD = 3
@@ -15,13 +15,16 @@ SQL_PATTERNS = [
 
 def parse_log_line(line):
     """Convert one raw log line into a dictionary."""
+
     t = re.search(r"\[?(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]?", line)
-    u = re.search(r"User:\s*([^|]+)", line, re.I)
-    ip = re.search(r"IP:\s*([^|]+)", line, re.I)
-    status = re.search(r"Status:\s*([^|]+)", line, re.I)
-    action = re.search(r"Action:\s*([^|]*)", line, re.I)
+    u = re.search(r"User=(\S+)", line, re.I)
+    ip = re.search(r"src_ip=(\S+)", line, re.I)
+    status = re.search(r"Status=(\S+)", line, re.I)
+    action = re.search(r"action=(.*?)\s+status=", line, re.I)
+   
     if not (t and u):
         return None
+    
     return {
         "timestamp": datetime.strptime(t.group(1), "%Y-%m-%d %H:%M:%S"),
         "username": u.group(1).strip(),
@@ -33,7 +36,7 @@ def parse_log_line(line):
 
 def read_log(filename):
     records, skipped = [], 0
-    with open(filename, "r", encoding="utf-8", errors="ignore") as file:
+    with open("log_data.txt", "r", encoding="utf-8", errors="ignore") as file:
         for line in file:
             record = parse_log_line(line)
             if record:
