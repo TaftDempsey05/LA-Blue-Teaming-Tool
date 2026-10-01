@@ -2,6 +2,9 @@ import re
 import sys
 from collections import defaultdict
 from datetime import datetime
+import numpy as np
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense
 
 # Tune these values for the organization being analyzed.
 KNOWN_USERS = {"admin", "tdempsey", "rflorian", "jsmith", "nhughes", "bwells"}  #Our organization's users.
@@ -86,6 +89,25 @@ def sql_check(records):
             alerts.append(f'{r["username"]}: possible SQL injection -> {r["raw"]}')
     return alerts
 
+def deep_learning_anomalies(records):
+    X = np.array([
+       [r["timestamp"].hour / 23, r["timestamp"].weekday() / 6,
+        1 if r["status"] in {"FAIL", "FAILED", "FAILURE"} else 0,
+        1 if "ssh" in r["raw"].lower() else 0,
+        1 if any(re.search(p, r["raw"], re.I) for p in SQL_PATTERNS) else 0]
+        for r in records
+    ], dtype=float)
+    model = Sequential([Dense(3, activation="relu", input_shape=(5,)),
+                         Dense(2, activation="relu"), Dense(3, activation="relu"),
+                         Dense(5, activation="sigmoid")])
+    model.compile(optimizer="adam", loss="mse")
+    model.fit(X, X, epochs=30, batch_size=16, verbose=0)
+    rebuilt = model.predict(X, verbose=0)
+    scores = np.mean((X - rebuilt) ** 2, axis=1)
+    cutoff = np.percentile(scores, 95)
+    return [(records[i], scores[i]) for i in range(len(records))
+            if scores[i] >= cutoff]
+
 def build_report(records, skipped):
     counts = count_login_attempts(records)
     users = defaultdict(list)
@@ -109,7 +131,22 @@ def build_report(records, skipped):
     alerts = validate_time(records) + ssh_check(records) + sql_check(records)
     lines.append("=== SUSPICIOUS ACTIVITY ===")
     lines += [f"- {a}" for a in alerts] if alerts else ["No rules were triggered."]
+
+    #Deep Learning Module
+    anomalies = deep_learning_anomalies(records)
+    lines.append("")
+    lines.append("======Deep Learning Anomalies====")
+
+    if anomalies:
+        for record, score in anomalies:
+            lines.append(
+                f'-Anomaly Score: {score:.4f} -> {record["raw"]}'
+            )
+    else:
+        lines.append("No Anomalies")
+            
     return "\n".join(lines)
+
 
 def main():
     if len(sys.argv) < 2:

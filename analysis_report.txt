@@ -43,3 +43,10 @@ USER: tdempsey
 - tdempsey: SSH at unusual time from 203.0.113.47
 - tdempsey: possible SQL injection -> 2026-02-12 10:08:02 user=tdempsey src_ip=203.0.113.47 action=login'-- status=failure
 - jsmith: possible SQL injection -> 2026-02-12 12:01:02 user=jsmith src_ip=203.0.113.47 action=login'-- status=failure
+
+======Deep Learning Anomalies====
+-Anomaly Score: 0.1887 -> 2026-02-12 10:08:02 user=tdempsey src_ip=203.0.113.47 action=login'-- status=failure
+-Anomaly Score: 0.1857 -> 2026-02-12 12:01:02 user=jsmith src_ip=203.0.113.47 action=login'-- status=failure
+-Anomaly Score: 0.1754 -> 2026-02-12 18:01:02 user=tdempsey src_ip=10.0.1.14 action=sshlogin status=success
+-Anomaly Score: 0.1972 -> 2026-02-12 23:01:02 user=tdempsey src_ip=203.0.113.47 action=open ssh key file status=success
+-Anomaly Score: 0.1972 -> 2026-02-12 23:01:02 user=tdempsey src_ip=203.0.113.47 action=ssh into admin account status=success
