@@ -1,12 +1,28 @@
 #Got inspired seeing all the filepath manipulation options when viewing pythong libraries during class on 10/6/2026, 
 # and decided to use OS to make sure the output files are always in the same DIR as the script, 
 # also using OS to default to log_data.txt in the same DIR as the script if no input file is given.
+
+# ===== PROGRAM OVERVIEW =====
+# Reads a log file, flags suspicious activity, and saves a text report plus a PDF with graphs.
+#
+# Flow:
+#   1. main() picks the log file (argument, or log_data.txt beside the script)
+#   2. read_log() parses each line into a dictionary (parse_log_line)
+#   3. Rule checks look for problems: unusual login hours, failed SSH
+#      attempts, SQL injection patterns, and unknown users
+#   4. An autoencoder (deep learning) flags the 5% most unusual records
+#   5. build_report() assembles everything into one text report
+#   6. Graphs and report text are saved to a PDF
+#
+# Uses os + BASE_DIR so input defaults and output files are always in the same folder as the script, no matter where the terminal is.
+
 import os
 import re
 import sys
 from collections import defaultdict
 from datetime import datetime
 import numpy as np
+#caused alerts going through tensorflow, so I commented it out and imported directly from keras instead.
 #from tensorflow.keras import Sequential
 #from tensorflow.keras.layers import Dense
 from keras.models import Sequential
@@ -23,6 +39,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 #needed so the text doesn't get cut off in the pdf
 import textwrap
 
+
 # Settings to tune per organization:
 # KNOWN_USERS = valid usernames (anyone else is flagged)
 # SUSPICIOUS_START/END = Ex.logins between 10 PM and 6 AM are unusual
@@ -38,7 +55,10 @@ SQL_PATTERNS = [
 ]
 
 
-
+# ----- PARSING AND READING -----
+# parse_log_line: uses regex to pull timestamp, user, IP, status, and action
+# from one line. Returns None if the timestamp or user is missing.
+# read_log: runs every line through parse_log_line, counts skipped lines.
 def parse_log_line(line):
     """Convert one raw log line into a dictionary."""
 
@@ -71,6 +91,11 @@ def read_log(filename):
                 skipped += 1
     return records, skipped
 
+# ----- DETECTION RULES -----
+# count_login_attempts: successful/failed login totals per user
+# validate_time: logins outside normal hours
+# ssh_check: SSH at odd hours + repeated failed attempts from one user/IP
+# sql_check: any log line matching a SQL injection pattern
 def count_login_attempts(records):
     counts = defaultdict(lambda: {"success": 0, "failed": 0})
     for r in records:
@@ -112,6 +137,10 @@ def sql_check(records):
             alerts.append(f'{r["username"]}: possible SQL injection -> {r["raw"]}')
     return alerts
 
+
+# ----- DEEP LEARNING -----
+# deep_learning_anomalies:
+# I have no idea how this works so you can comment on this taft.
 def deep_learning_anomalies(records):
     X = np.array([
        [r["timestamp"].hour / 23, r["timestamp"].weekday() / 6,
@@ -131,6 +160,9 @@ def deep_learning_anomalies(records):
     return [(records[i], scores[i]) for i in range(len(records))
             if scores[i] >= cutoff]
 
+
+# ----- REPORT -----
+# build_report: groups records by user, then lists IPs, login counts, actions, unknown-user alerts, rule-based alerts, and deep learning anomalies.
 def build_report(records, skipped):
     counts = count_login_attempts(records)
     users = defaultdict(list)
@@ -170,9 +202,17 @@ def build_report(records, skipped):
             
     return "\n".join(lines)
 
-#Roberts matplotlib meltdown... Gotta change the analysis report to a pdf to hold the graphs.
-#AI disclosure, VScode has an ai autocomplete function that writes a lot of the code for me, I just have to edit it to make it work. Not sure if this is allowed.
-#Also online resources suggested textwrap for the text pages.
+# ----- GRAPHS -----
+# graph_* functions: each builds one matplotlib figure and returns it.
+#   graph_logins = success vs failed per user
+#   graph_events_per_ip = activity per IP (red = outside 10.x.x.x)
+#   graph_hours = entries per hour (red = suspicious hours)
+#   graph_alerts_by_user = stacked alerts per user, colored by type
+
+#Roberts matplotlib meltdown... Gotta change the analysis report to a pdf to hold the graphs also ended up with lines being cut off so had to find a solution to that (textwrap).
+#AI disclosure, VScode has an ai autocomplete function that writes a lot of the code for me, I just had to edit most of it to make it work. Not sure if this is allowed.
+#Online resources suggested textwrap as the simplest solution without having to add another big library and rewrite the code to use it, so I went with that. 
+#Example I saw: https://stackoverflow.com/questions/10112244/convert-plain-text-to-pdf-in-python
 def graph_logins(records):
     counts = count_login_attempts(records)
     users = sorted(counts.keys())
@@ -183,8 +223,8 @@ def graph_logins(records):
     width = 0.35
 
     fig, ax = plt.subplots(figsize=(8.5, 5))
-    ax.bar(x - width/2, successes, width, label='Successful Logins', color='green')
-    ax.bar(x + width/2, failures, width, label='Failed Logins', color='red')
+    ax.bar(x - width/2, successes, width, label='Successful Logins', color='green', edgecolor='black')
+    ax.bar(x + width/2, failures, width, label='Failed Logins', color='red', edgecolor='black')
 
     ax.set_xlabel('Users')
     ax.set_ylabel('Number of Logins')
@@ -203,14 +243,14 @@ def graph_events_per_ip(records):
     colors = ['steelblue' if ip.startswith("10.") else 'red' for ip in ips]
  
     fig, ax = plt.subplots(figsize=(8.5, 5))
-    ax.barh(ips, [counts[ip] for ip in ips], color=colors)
+    ax.barh(ips, [counts[ip] for ip in ips], color=colors, edgecolor='black')
     ax.set_xlabel('Number of Log Entries')
     ax.set_ylabel('Source IP')
     ax.set_title('Activity by Source IP (red = outside 10.x.x.x network)')
     fig.tight_layout()
     return fig
 
-#hours outside the normal workday are highlighted in red, and the rest are blue.
+
 def graph_hours(records):
     hours = [r["timestamp"].hour for r in records]
     counts = [hours.count(h) for h in range(24)]
@@ -218,6 +258,7 @@ def graph_hours(records):
     normal = [h for h in range(24) if h not in suspicious]
 
     fig, ax = plt.subplots(figsize=(8.5, 5))
+    #hours outside the normal workday are highlighted in red, and the rest are blue.
     ax.bar(normal, [counts[h] for h in normal], color='blue', edgecolor='black', label='Normal Hours')
     ax.bar(suspicious, [counts[h] for h in suspicious], color='red', edgecolor='black', label='Suspicious Hours')
     ax.set_xlabel('Hour of the Day')
@@ -241,7 +282,7 @@ def graph_alerts_by_user(records):
     bottoms = [0] * len(users)
     for (label, alerts), color in zip(categories.items(), colors):
         values = [sum(1 for a in alerts if a.split(":")[0] == u) for u in users]
-        ax.bar(users, values, bottom=bottoms, label=label, color=color)
+        ax.bar(users, values, bottom=bottoms, label=label, color=color, edgecolor='black')
         bottoms = [b + v for b, v in zip(bottoms, values)]
 
     ax.set_yticks(range(0, max(bottoms) + 1))
@@ -252,7 +293,9 @@ def graph_alerts_by_user(records):
     fig.tight_layout()
     return fig
 
-#Textwrap makes sure the text fits on the page, without it the long text lines run off the page, also had a problem with matplotlib picking up $ as a math.
+# ----- PDF -----
+# add_text_pages: wraps text to fit the page, escapes $ so matplotlib doesn't treat it as math, then splits it into pages of 75 lines.
+# save_pdf_report: writes the 4 graphs first, then the text pages.
 def add_text_pages(pdf, text, width=100, lines_per_page=75):
     text = text.replace("$", r"\$")
     wrapped = []
@@ -323,6 +366,9 @@ def main():
 if __name__ == "__main__":
     main()
 
+
+# Suggestion IMPLEMENTED BY TAFT. (Also stole this note format cause it looks pretty clean.)
+#
 # ----- OPTIONAL ADVANCED DEEP-LEARNING EXTENSION -----
 # Commented out so the starter code runs without TensorFlow.
 # Autoencoder: learn common event patterns; high reconstruction error = anomaly.
