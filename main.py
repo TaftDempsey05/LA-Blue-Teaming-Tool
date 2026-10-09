@@ -1,12 +1,50 @@
+#Got inspired seeing all the filepath manipulation options when viewing pythong libraries during class on 10/6/2026, 
+# and decided to use OS to make sure the output files are always in the same DIR as the script, 
+# also using OS to default to log_data.txt in the same DIR as the script if no input file is given.
+
+# ===== PROGRAM OVERVIEW =====
+# Reads a log file, flags suspicious activity, and saves a text report plus a PDF with graphs.
+#
+# Flow:
+#   1. main() picks the log file (argument, or log_data.txt beside the script)
+#   2. read_log() parses each line into a dictionary (parse_log_line)
+#   3. Rule checks look for problems: unusual login hours, failed SSH
+#      attempts, SQL injection patterns, and unknown users
+#   4. An autoencoder (deep learning) flags the 5% most unusual records
+#   5. build_report() assembles everything into one text report
+#   6. Graphs and report text are saved to a PDF
+#
+# Uses os + BASE_DIR so input defaults and output files are always in the same folder as the script, no matter where the terminal is.
+
+import os
 import re
 import sys
 from collections import defaultdict
 from datetime import datetime
 import numpy as np
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense
+#caused alerts going through tensorflow, so I commented it out and imported directly from keras instead.
+#from tensorflow.keras import Sequential
+#from tensorflow.keras.layers import Dense
+from keras.models import Sequential
+from keras.layers import Dense
 
-# Tune these values for the organization being analyzed.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+#Graph imports
+import matplotlib
+#use Agg so charts are saved to the PDF instead of opening interactive windows"
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+#needed so the text doesn't get cut off in the pdf
+import textwrap
+
+
+# Settings to tune per organization:
+# KNOWN_USERS = valid usernames (anyone else is flagged)
+# SUSPICIOUS_START/END = Ex.logins between 10 PM and 6 AM are unusual
+# SSH_FAIL_THRESHOLD = # of failed SSH attempts per user/IP before alerting
+# SQL_PATTERNS = regex patterns for common SQL injection tricks
 KNOWN_USERS = {"admin", "tdempsey", "rflorian", "jsmith", "nhughes", "bwells"}  #Our organization's users.
 SUSPICIOUS_START = 22                    # 10 PM
 SUSPICIOUS_END = 6                       # 6 AM
@@ -16,6 +54,11 @@ SQL_PATTERNS = [
     r"--", r"xp_cmdshell", r"sleep\s*\("
 ]
 
+
+# ----- PARSING AND READING -----
+# parse_log_line: uses regex to pull timestamp, user, IP, status, and action
+# from one line. Returns None if the timestamp or user is missing.
+# read_log: runs every line through parse_log_line, counts skipped lines.
 def parse_log_line(line):
     """Convert one raw log line into a dictionary."""
 
@@ -29,17 +72,17 @@ def parse_log_line(line):
         return None
     
     return {
-        "timestamp": datetime.strptime(t.group(1), "%Y-%m-%d %H:%M:%S"),
+        "timestamp": datetime.strptime(t.group(1), "%Y-%m-%d %H:%M:%S"), #Returns each value for each line and returns "UNKNOWN" if the value is missing.
         "username": u.group(1).strip(),
         "ip": ip.group(1).strip() if ip else "UNKNOWN",
         "status": status.group(1).strip().upper() if status else "UNKNOWN",
         "action": action.group(1).strip() if action else "",
         "raw": line.strip()
     }
-
+#This function reads each line in the log file and keeps record of the lines that get skipped. Skipped lines are invalid lines.
 def read_log(filename):
     records, skipped = [], 0
-    with open("log_data.txt", "r", encoding="utf-8", errors="ignore") as file:
+    with open(filename, "r", encoding="utf-8", errors="ignore") as file:
         for line in file:
             record = parse_log_line(line)
             if record:
@@ -48,6 +91,11 @@ def read_log(filename):
                 skipped += 1
     return records, skipped
 
+# ----- DETECTION RULES -----
+# count_login_attempts: successful/failed login totals per user
+# validate_time: logins outside normal hours
+# ssh_check: SSH at odd hours + repeated failed attempts from one user/IP
+# sql_check: any log line matching a SQL injection pattern
 def count_login_attempts(records):
     counts = defaultdict(lambda: {"success": 0, "failed": 0})
     for r in records:
@@ -57,7 +105,7 @@ def count_login_attempts(records):
             elif r["status"] in {"FAIL", "FAILED", "FAILURE"}:
                 counts[r["username"]]["failed"] += 1
     return counts
-
+#This function checks if any of the times match the suspicous times stated above. It then appends and returns the suspicous times into "alerts" for the report.
 def validate_time(records):
     alerts = []
     for r in records:
@@ -67,7 +115,7 @@ def validate_time(records):
             alerts.append(f'{r["username"]}: unusual login at {r["timestamp"]}')
     return alerts
 
-def ssh_check(records):
+def ssh_check(records): #This function checks for ssh patterns and returns and appends them in "alerts" if the attemps are greater than the threshold.
     failed = defaultdict(int)
     alerts = []
     for r in records:
@@ -82,13 +130,17 @@ def ssh_check(records):
             alerts.append(f"{user}: {total} failed SSH attempts from {ip}")
     return alerts
 
-def sql_check(records):
+def sql_check(records): #This function uses the sql injecton paterns we gave the program to return any possible slq injection attempts from a user.
     alerts = []
     for r in records:
         if any(re.search(p, r["raw"], re.I) for p in SQL_PATTERNS):
             alerts.append(f'{r["username"]}: possible SQL injection -> {r["raw"]}')
     return alerts
 
+
+# ----- DEEP LEARNING -----
+# deep_learning_anomalies:
+# This function trains the logs and assigns them numbers to use machine learning to flag the top %5 unusual activity.
 def deep_learning_anomalies(records):
     X = np.array([
        [r["timestamp"].hour / 23, r["timestamp"].weekday() / 6,
@@ -108,6 +160,9 @@ def deep_learning_anomalies(records):
     return [(records[i], scores[i]) for i in range(len(records))
             if scores[i] >= cutoff]
 
+
+# ----- REPORT -----
+# build_report: groups records by user, then lists IPs, login counts, actions, unknown-user alerts, rule-based alerts, and deep learning anomalies.
 def build_report(records, skipped):
     counts = count_login_attempts(records)
     users = defaultdict(list)
@@ -147,43 +202,168 @@ def build_report(records, skipped):
             
     return "\n".join(lines)
 
+# ----- GRAPHS -----
+# graph_* functions: each builds one matplotlib figure and returns it.
+#   graph_logins = success vs failed per user
+#   graph_events_per_ip = activity per IP (red = outside 10.x.x.x)
+#   graph_hours = entries per hour (red = suspicious hours)
+#   graph_alerts_by_user = stacked alerts per user, colored by type
+
+#Roberts matplotlib meltdown... Gotta change the analysis report to a pdf to hold the graphs also ended up with lines being cut off so had to find a solution to that (textwrap).
+#AI disclosure, VScode has an ai autocomplete function that writes a lot of the code for me, I just had to edit most of it to make it work. Not sure if this is allowed.
+#Online resources suggested textwrap as the simplest solution without having to add another big library and rewrite the code to use it, so I went with that. 
+#Example I saw: https://stackoverflow.com/questions/10112244/convert-plain-text-to-pdf-in-python
+def graph_logins(records):
+    counts = count_login_attempts(records)
+    users = sorted(counts.keys())
+    successes = [counts[u]["success"] for u in users]
+    failures = [counts[u]["failed"] for u in users]
+
+    x = np.arange(len(users))
+    width = 0.35
+
+    fig, ax = plt.subplots(figsize=(8.5, 5))
+    ax.bar(x - width/2, successes, width, label='Successful Logins', color='green', edgecolor='black')
+    ax.bar(x + width/2, failures, width, label='Failed Logins', color='red', edgecolor='black')
+
+    ax.set_xlabel('Users')
+    ax.set_ylabel('Number of Logins')
+    ax.set_title('Login Attempts by Users')
+    ax.set_xticks(x)
+    ax.set_xticklabels(users, rotation=45)
+    ax.legend()
+    fig.tight_layout()
+    return fig
+
+def graph_events_per_ip(records): #This creates a grapgh for the activity of each ip address.
+    counts = defaultdict(int)
+    for r in records:
+        counts[r["ip"]] += 1
+    ips = sorted(counts, key=counts.get)
+    colors = ['steelblue' if ip.startswith("10.") else 'red' for ip in ips]
+ 
+    fig, ax = plt.subplots(figsize=(8.5, 5))
+    ax.barh(ips, [counts[ip] for ip in ips], color=colors, edgecolor='black')
+    ax.set_xlabel('Number of Log Entries')
+    ax.set_ylabel('Source IP')
+    ax.set_title('Activity by Source IP (red = outside 10.x.x.x network)')
+    fig.tight_layout()
+    return fig
+
+
+def graph_hours(records): #This graphs the activity hours.
+    hours = [r["timestamp"].hour for r in records]
+    counts = [hours.count(h) for h in range(24)]
+    suspicious = [h for h in range(24) if h >= SUSPICIOUS_START or h < SUSPICIOUS_END]
+    normal = [h for h in range(24) if h not in suspicious]
+
+    fig, ax = plt.subplots(figsize=(8.5, 5))
+    #hours outside the normal workday are highlighted in red, and the rest are blue.
+    ax.bar(normal, [counts[h] for h in normal], color='blue', edgecolor='black', label='Normal Hours')
+    ax.bar(suspicious, [counts[h] for h in suspicious], color='red', edgecolor='black', label='Suspicious Hours')
+    ax.set_xlabel('Hour of the Day')
+    ax.set_ylabel('Number of Log Entries')
+    ax.set_title('Log Entries by Hour of the Day')
+    ax.set_xticks(range(24))
+    ax.legend()
+    fig.tight_layout()
+    return fig
+
+def graph_alerts_by_user(records): #This does pretty much the same thing as the ip address bar graph but for usernames instead.
+    categories = {
+        "Unusual-hour login": validate_time(records),
+        "SSH alert": ssh_check(records),
+        "SQL injection": sql_check(records),
+    }
+    users = sorted({r["username"] for r in records})
+    colors = ['orange', 'purple', 'red']
+
+    fig, ax = plt.subplots(figsize=(8.5, 5))
+    bottoms = [0] * len(users)
+    for (label, alerts), color in zip(categories.items(), colors):
+        values = [sum(1 for a in alerts if a.split(":")[0] == u) for u in users]
+        ax.bar(users, values, bottom=bottoms, label=label, color=color, edgecolor='black')
+        bottoms = [b + v for b, v in zip(bottoms, values)]
+
+    ax.set_yticks(range(0, max(bottoms) + 1))
+    ax.set_xlabel('Users')
+    ax.set_ylabel('Number of Alerts')
+    ax.set_title('Alerts by User')
+    ax.legend()
+    fig.tight_layout()
+    return fig
+
+# ----- PDF -----
+# add_text_pages: wraps text to fit the page, escapes $ so matplotlib doesn't treat it as math, then splits it into pages of 75 lines.
+# save_pdf_report: writes the 4 graphs first, then the text pages.
+def add_text_pages(pdf, text, width=100, lines_per_page=75):
+    text = text.replace("$", r"\$")
+    wrapped = []
+    for line in text.split("\n"):
+        wrapped += textwrap.wrap(line, width=width, subsequent_indent="    ") or [""]
+    for i in range(0, len(wrapped), lines_per_page):
+        fig = plt.figure(figsize=(8.5, 11))
+        fig.text(0.06, 0.96, "\n".join(wrapped[i:i + lines_per_page]),
+                 family="monospace", fontsize=7.5, va="top")
+        pdf.savefig(fig)
+        plt.close(fig)
+
+def save_pdf_report(records, report_text, filename="analysis_report.pdf"):
+    with PdfPages(filename) as pdf:
+
+        #Add the login attempts graph
+        fig_logins = graph_logins(records)
+        pdf.savefig(fig_logins)
+        plt.close(fig_logins)
+
+        #Add the log entries per IP graph
+        fig_ips = graph_events_per_ip(records)
+        pdf.savefig(fig_ips)
+        plt.close(fig_ips)
+
+        #Add the log entries by hour graph
+        fig_hours = graph_hours(records)
+        pdf.savefig(fig_hours)
+        plt.close(fig_hours)
+
+        #Add the log entries per user graph
+        fig_alerts = graph_alerts_by_user(records)
+        pdf.savefig(fig_alerts)
+        plt.close(fig_alerts)
+
+        #Add the text report pages
+        add_text_pages(pdf, report_text)
 
 def main():
+    #default to log_data.txt in the same DIR as the script if no input file is given
     if len(sys.argv) < 2:
-        print("Usage: python log_analyzer.py Log_File.txt")
+        log_path = os.path.join(BASE_DIR, "log_data.txt")
+    else:
+        log_path = sys.argv[1]
+        #if the typed path doesn't exist, look next to the script instead
+        if not os.path.exists(log_path):
+            log_path = os.path.join(BASE_DIR, sys.argv[1])
+    
+    records, skipped = read_log(log_path)
+
+    #stop early if nothing in the file could be parsed, preventing crashes.
+    if not records:
+        print(f"No valid log entries found in {log_path} ({skipped} lines skipped).")
         return
-    records, skipped = read_log(sys.argv[1])
     report = build_report(records, skipped)
     print(report)
-    with open("analysis_report.txt", "w", encoding="utf-8") as file:
+
+    #making the output files always in the same DIR as the script.
+    txt_output_path = os.path.join(BASE_DIR, "analysis_report.txt")
+    pdf_output_path = os.path.join(BASE_DIR, "analysis_report.pdf")
+
+    #Save the text report and the PDF report with graphs
+    with open(txt_output_path, "w", encoding="utf-8") as file:
         file.write(report)
-    print("\nSaved report to analysis_report.txt")
+    save_pdf_report(records, report, pdf_output_path)
+    print(f"\nSaved report to {txt_output_path}, and report with graphs to {pdf_output_path}")
 
 if __name__ == "__main__":
     main()
 
-# ----- OPTIONAL ADVANCED DEEP-LEARNING EXTENSION -----
-# Commented out so the starter code runs without TensorFlow.
-# Autoencoder: learn common event patterns; high reconstruction error = anomaly.
-# import numpy as np
-# from tensorflow.keras import Sequential
-# from tensorflow.keras.layers import Dense
-#
-# def deep_learning_anomalies(records):
-#     X = np.array([
-#         [r["timestamp"].hour / 23, r["timestamp"].weekday() / 6,
-#          1 if r["status"] in {"FAIL", "FAILED", "FAILURE"} else 0,
-#          1 if "ssh" in r["raw"].lower() else 0,
-#          1 if any(re.search(p, r["raw"], re.I) for p in SQL_PATTERNS) else 0]
-#         for r in records
-#     ], dtype=float)
-#     model = Sequential([Dense(3, activation="relu", input_shape=(5,)),
-#                         Dense(2, activation="relu"), Dense(3, activation="relu"),
-#                         Dense(5, activation="sigmoid")])
-#     model.compile(optimizer="adam", loss="mse")
-#     model.fit(X, X, epochs=30, batch_size=16, verbose=0)
-#     rebuilt = model.predict(X, verbose=0)
-#     scores = np.mean((X - rebuilt) ** 2, axis=1)
-#     cutoff = np.percentile(scores, 95)
-#     return [(records[i], scores[i]) for i in range(len(records))
-#             if scores[i] >= cutoff]
+
