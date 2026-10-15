@@ -10,7 +10,7 @@ We were able to create a large python program that has the tools needed to extra
 ## Usage Steps
 
 ## Step 1: Install the requirements
-In your LA-Blue-Teaming-Tool terminal, run the command "pip install requirements.txt" to install the required python libraries for the program to work. This will include numpy, keras, tensorflow, and matplotlib.
+In your LA-Blue-Teaming-Tool terminal, run the command "pip install -r requirements.txt" to install the required python libraries for the program to work. This will include numpy, keras, tensorflow, and matplotlib.
 
 ## Step 2: Run the program
 In your same terminal, run the command "python main.py log_data.txt" to run the main python program on your log_data.txt file. 
